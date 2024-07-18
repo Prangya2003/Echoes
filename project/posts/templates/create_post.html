@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Create Post Page{% endblock %}
+
+{% block body %}
+{% include "navbar.html" %}
+<div class="container mt-5 pt-4">
+    <div class="create-post-container text-center">
+        <div class="create-post-logo">
+            <img src="\media\logo.jpg" alt="Logo">
+        </div>
+        <h2>Create Post</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token%}
+            <div class="form-group">
+                <textarea class="form-control" name="caption" rows="3" placeholder="Caption" required></textarea>
+            </div>
+            <div class="form-group">
+                <input type="file" class="form-control-file" name="post" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Post</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

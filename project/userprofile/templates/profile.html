@@ -1,28 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Profile{% endblock %}
+{% block title %}Homepage{% endblock %}
 
 {% block body %}
 {% include "navbar.html" %}
+{% load custom_tags%}
 <div class="container mt-5 pt-4">
     <div class="row">
         <div class="col-md-4 text-center">
-            <a href="#"><img src="{{ user.UserProfileModel_user.profile_picture.url }}" class="profile-img" alt="Profile Image" style:"border: 1px solid black"></a>
+            <a href="#">
+                {% if user.UserProfileModel_user.has_profile_pic %}
+                <img src="{{user.UserProfileModel_user.profile_picture.url}}" class="profile-img" alt="Profile Image" style="border: 1px solid rgb(224, 211, 211);">
+                {% else %}
+                <img src="" class="profile-img" alt="Profile Image" style="border: 1px solid rgb(224, 211, 211);">
+                {% endif %}
+            </a>
             <h2 class="mt-2">{{user.username}}</h2>
-            
-            <p><strong>{{user.first_name}} {{user.last_name}}</strong><br/>{{ user.UserProfileModel_user.bio}}</p>
+
+            <p><strong>{{user.first_name}} {{user.last_name}}</strong><br/>{{user.UserProfileModel_user.bio}}</p>
             <div class="row profile-stat">
                 <div class="col-4">
-                    <strong>{{count.posts_count}}</strong><br>Posts
+                    <strong>{{data.posts_count}}</strong><br>Posts
                 </div>
                 <div class="col-4">
-                    <strong>{{count.followers_count}}</strong><br>Followers
+                    <strong>{{data.followers_count}}</strong><br>Followers
                 </div>
                 <div class="col-4">
-                    <strong>{{count.posts_count}}</strong><br>Following
+                    <strong>{{data.following_count}}</strong><br>Following
                 </div>
             </div>
-            <button class="btn btn-outline-primary btn-block mt-3">Edit Profile</button>
-            <button class="btn btn-outline-primary btn-block mt-3">Edit Profile</button>
+            {% if data.is_user_profile %}
+            <a href="{% url 'update_user_profile' %}" class="btn btn-outline-primary btn-block mt-3">Edit Profile</a>
+            <a href="{% url 'update_password_view' %}" class="btn btn-outline-info btn-block mt-3">Update Password</a>
+            <a href="{% url 'delete_profile_view' %}" class="btn btn-outline-danger btn-block mt-3">Delete Account</a>
+            {%else%}
+            <a href="{% url 'follow_view' user.username %}" class="btn btn-outline-primary btn-block mt-3">
+                {% if user|is_follow:request.user %}
+                Unfollow
+                {% else %}
+                Follow
+                {% endif %}
+            </a>
+            <a href="{% url 'recipient_message_view' user.username %}" class="btn btn-outline-primary btn-block mt-3">Messsage</a>
+            {% endif %}
         </div>
         <div class="col-md-8">
             <!-- Nav tabs -->
@@ -38,50 +57,40 @@
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
                     <div class="row mt-4">
+                        {% if data.posts_count != 0%}
+                        {% for post in data.user_posts %}
                         <!-- Post -->
                         <div class="col-6 mb-4">
                             <div class="card post-card">
-                                <a href="#"><img src="https://buffer.com/library/content/images/size/w1200/2023/10/free-images.jpg" class="card-img-top post-img" alt="Post Image"></a>
-                                <div class="three-dots dropdown">
-                                    <i class="fas fa-ellipsis-h" id="postOptions1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
-                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="postOptions1">
-                                        <a class="dropdown-item" href="#">Edit</a>
-                                        <a class="dropdown-item" href="#">Delete</a>
-                                    </div>
-                                </div>
+                                <a href="{% url 'view_post' post.id %}"><img src="{{post.post.url}}" class="card-img-top post-img fix-post-img" alt="Post Image"></a>
                             </div>
                         </div>
-                        <!-- Post -->
-                        <div class="col-6 mb-4">
-                            <div class="card post-card">
-                                <img src="post2.jpg" class="card-img-top post-img" alt="Post Image">
-                                <div class="three-dots dropdown">
-                                    <i class="fas fa-ellipsis-h" id="postOptions2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
-                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="postOptions2">
-                                        <a class="dropdown-item" href="#">Edit</a>
-                                        <a class="dropdown-item" href="#">Delete</a>
-                                    </div>
-                                </div>
-                            </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="col-12 mt-4 text-center">
+                            <strong>No Posts Yet...</strong>
                         </div>
-                        <!-- Add more posts as needed -->
+                        {% endif %}
                     </div>
                 </div>
                 <div class="tab-pane fade" id="saved" role="tabpanel" aria-labelledby="saved-tab">
                     <div class="row mt-4">
                         <!-- Saved Post -->
+                        {% if data.saved_posts_count != 0 %}
+                        {% for post in data.user_saved_posts %}
+                        <!-- Post -->
                         <div class="col-6 mb-4">
-                            <div class="card">
-                                <img src="saved1.jpg" class="card-img-top post-img" alt="Saved Post Image">
+                            <div class="card post-card">
+                                <a href="{% url 'view_post' post.id %}"><img src="{{post.post.url}}" class="card-img-top post-img fix-post-img" alt="Post Image"></a>
                             </div>
                         </div>
-                        <!-- Saved Post -->
-                        <div class="col-6 mb-4">
-                            <div class="card">
-                                <img src="saved2.jpg" class="card-img-top post-img" alt="Saved Post Image">
-                            </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="col-12 mt-4 text-center">
+                            <strong>No Saved Posts Yet...</strong>
                         </div>
-                        <!-- Add more saved posts as needed -->
+                        {% endif %}
+                        
                     </div>
                 </div>
             </div>

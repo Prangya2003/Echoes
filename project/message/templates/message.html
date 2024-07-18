@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+
+{% block body %}
+{% include "navbar.html" %}
+{% load custom_tags %}
+<div class="container mt-5 pt-4">
+    <div class="row">
+        <!-- Recipients List -->
+        <div class="col-md-4 recipient-list p-3">
+            <h5>Messages</h5>
+            <ul class="list-group">
+                {% for recipient in data.recipients %}
+                <a href="{% url 'recipient_message_view' recipient.username %}" style="text-decoration: none; color: black;">
+                    <li class="list-group-item d-flex align-items-center">
+                    {% if recipient.UserProfileModel_user.has_profile_pic %}
+                    <img src="{{recipient.UserProfileModel_user.profile_picture.url}}" class="rounded-circle mr-3" style="border: 1px solid grey;" alt="User Image" width="50">
+                    {% else %}
+                    <img src="" class="rounded-circle mr-3" alt="User Image" width="50">
+                    {% endif %}
+                    <span>{{recipient.first_name}} {{recipient.last_name}}</span>
+                </li></a>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Message Screen -->
+        <div class="col-md-8 p-3 d-flex flex-column">
+            <div class="message-screen">
+                {% for message in data.messages %}
+                
+                 {% if data.sender == message.sender.username %}
+                <!-- Message from Sender -->
+                <div class="media message message-right">
+                    <div class="media-body">
+                        <h6 class="mt-0">Me</h6>
+                        <p style="border: 1px solid grey; display: inline-block; padding: 5px; border-radius: 5px;">{{message.message}}<br/><small style="float: inline-end; font-size: 11px;">{{ message|covert_time }}</small></p>
+                    </div>
+                    <!-- <img src="profile.jpg" class="ml-3 rounded-circle" alt="User Image" width="50"> -->
+                </div>
+                {% else %}
+                <!-- Message from Receiver -->
+                <div class="media message message-left">
+                    <!-- <img src="user1.jpg" class="mr-3 rounded-circle" alt="User Image" width="50"> -->
+                    <div class="media-body">
+                        <h6 class="mt-0">{{message.sender.username}}</h6>
+                        <p style="border: 1px solid grey; display: inline-block; padding: 5px; border-radius: 5px;">{{message.message}}<br/><small style="float: inline-end; font-size: 11px;">01:53pm</small></p>
+                    </div>
+                </div>
+                
+                {% endif %}
+                {% endfor %}
+            </div>
+            <form method="post">
+                {%csrf_token%}
+            <div class="mt-auto d-flex align-items-center">
+                <input type="text" class="form-control message-input" placeholder="Type a message..." required name="message">
+                <button class="btn btn-primary send-button" type="submit">Send</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

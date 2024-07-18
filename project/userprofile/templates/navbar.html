@@ -3,6 +3,15 @@
         <a class="navbar-brand" href="{% url 'home_view' %}">
             <img src="\media\logo.jpg" alt="Logo"> Echoes
         </a>
+        {% if request.path == '/userprofile/home/' %}
+        <div class="search-container" style="margin-left: 15%;">
+            <form method="post">
+                {%csrf_token%}
+            <input type="text" class="form-control search-input" name="username" placeholder="Search for users..." required>
+            <button class="btn btn-primary" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+        </form>
+        </div>
+        {% endif %}
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -13,6 +22,12 @@
                 </li>
                 <li class="navbar-item">
                     <a class="nav-link" href="{% url 'profile_view' request.user.username %}">Profile</a>
+                </li>
+                <li class="navbar-item">
+                    <a class="nav-link" href="{% url 'create_post_view' %}">Create Post</a>
+                </li>
+                <li class="navbar-item">
+                    <a class="nav-link" href="{% url 'message_view' %}">Messages</a>
                 </li>
                 <li class="navbar-item">
                     <a class="nav-link" href="{% url 'logout_view' %}">Logout</a>

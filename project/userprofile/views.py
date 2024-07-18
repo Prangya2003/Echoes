@@ -8,7 +8,7 @@ from message.models import RecipientModel
 def home_view(request):
     if request.user.is_authenticated:
         post_data = PostModel.objects.exclude(user__pk=request.user.pk)
-        return render(request, 'home.html',context={"user":request.user,"posts":post_data})
+        return render(request, 'home.html',context={"request":request,"user":request.user,"posts":post_data})
     else:
         return redirect('login_view')
 
@@ -50,9 +50,86 @@ def logout_view(request):
 
 def profile_view(request, username):
     user_instance = get_object_or_404(get_user_model(), username=username)
-    count = {
+    data = {
         "posts_count": user_instance.PostModel_user.all().count(),
+        "saved_posts_count":user_instance.SavedPostModel_user.posts.all().count(),
         "followers_count": user_instance.UserRelationModel_user.followers.all().count(),
-        "following_count": user_instance.UserRelationModel_user.following.all().count()
+        "following_count": user_instance.UserRelationModel_user.following.all().count(),
+        "user_posts":user_instance.PostModel_user.all(),
+        "user_saved_posts":user_instance.SavedPostModel_user.posts.all()
     }
-    return render(request, 'profile.html', context={"user": user_instance, "count": count})
+    return render(request, 'profile.html', context={"user": user_instance, "data": data})
+
+def update_user_profile(request):
+    user_instance= request.user
+    if request.method == 'POST':
+        user_instance.first_name = request.POST.get('first_name')
+        user_instance.last_name = request.POST.get('last_name')
+        if request.POST.get('username') != request.user.username:
+            if get_user_model().objects.filter(username=request.POST.get('username')).exists():
+                print("Username already taken")
+            else:
+                user_instance.username = request.POST.get('username')
+        user_profile_instance = user_instance.UserProfileModel_user
+        user_profile_instance.bio = request.POST.get('bio')
+        if len(request.FILES) != 0:
+            user_profile_instance.profile_picture = request.FILES['profile_picture']
+        user_profile_instance.save()
+        user_instance.save()
+        return redirect('profile_view',username=request.user.username)
+    return render(request, 'update_user_profile.html',context={"request":request,"user":request.user})
+
+def update_password_view(request):
+    user_instance = request.user
+    if request.method == 'POST':
+        user_check = authenticate(username=user_instance.username,password=request.POST.get('password'))
+        if user_check is not None:
+            if request.POST.get('new_password') == request.POST.get('new_password_check'):
+                user_instance.set_password(request.POST.get('new_password'))
+                user_instance.save()
+        return redirect('profile_view',request.user.username)
+    return render(request, 'update_password.html',context={"request":request,"user":request.user})
+
+def delete_profile_view(request):
+    request.user.delete()
+    return redirect('login_view')
+
+def follow_view(request,username):
+    user_instance = request.user
+    user_relation_instance = request.user.UserRelationModel_user
+
+    target_user = get_user_model().objects.get(username=username)
+    target_user_relation_instance = target_user.UserRelationModel_user
+
+    if user_relation_instance.following.all().filter(id=target_user.id).exists():
+        user_relation_instance.following.remove(target_user)
+    else:
+        user_relation_instance.following.add(target_user)
+    user_relation_instance.save()
+
+    if target_user_relation_instance.followers.all().filter(id=user_instance.id).exists():
+        target_user_relation_instance.followers.remove(user_instance)
+    else:
+        target_user_relation_instance.followers.add(user_instance)
+    target_user_relation_instance.save()
+    return redirect('profile_view',username=username)
+
+
+def like_view(request,id):
+    post_instance = PostModel.objects.get(id=id)
+    if post_instance.likes.all().filter(username=request.user.username).exists():
+        post_instance.likes.remove(request.user)
+    else:
+        post_instance.likes.add(request.user)
+    post_instance.save()
+    return redirect('home_view')
+
+def save_view(request,id):
+    post_instance = PostModel.objects.get(id=id)
+    saved_post_instance = request.user.SavedPostModel_user
+    if saved_post_instance.posts.all().filter(id=id).exists():
+        saved_post_instance.posts.remove(post_instance)
+    else:
+        saved_post_instance.posts.add(post_instance)
+    saved_post_instance.save()
+    return redirect('home_view')
