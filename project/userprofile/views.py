@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect,get_object_or_404
+from django.shortcuts import render,redirect
 from django.contrib.auth import get_user_model,authenticate,login,logout
 from .models import UserProfileModel,UserRelationModel
 from posts.models import PostModel,SavedPostModel
@@ -6,6 +6,9 @@ from message.models import RecipientModel
 
 # Create your views here.
 def home_view(request):
+    if request.method == 'POST':
+        if get_user_model().objects.filter(username=request.POST.get('username')).exists():
+            return redirect('profile_view', request.POST.get('username'))
     if request.user.is_authenticated:
         post_data = PostModel.objects.exclude(user__pk=request.user.pk)
         return render(request, 'home.html',context={"request":request,"user":request.user,"posts":post_data})
@@ -48,17 +51,19 @@ def logout_view(request):
     logout(request)
     return redirect('login_view')
 
-def profile_view(request, username):
-    user_instance = get_object_or_404(get_user_model(), username=username)
+def profile_view(request,username):
+    user_instance = get_user_model().objects.get(username=username)
     data = {
-        "posts_count": user_instance.PostModel_user.all().count(),
+        "is_user_profile": True if request.user.username == username else False,
+        "posts_count":user_instance.PostModel_user.all().count(),
         "saved_posts_count":user_instance.SavedPostModel_user.posts.all().count(),
-        "followers_count": user_instance.UserRelationModel_user.followers.all().count(),
-        "following_count": user_instance.UserRelationModel_user.following.all().count(),
+        "followers_count":user_instance.UserRelationModel_user.followers.all().count(),
+        "following_count":user_instance.UserRelationModel_user.following.all().count(),
         "user_posts":user_instance.PostModel_user.all(),
         "user_saved_posts":user_instance.SavedPostModel_user.posts.all()
     }
-    return render(request, 'profile.html', context={"user": user_instance, "data": data})
+    print(data['is_user_profile'])
+    return render(request, 'profile.html',context={"request":request,"user":user_instance,"data":data})
 
 def update_user_profile(request):
     user_instance= request.user

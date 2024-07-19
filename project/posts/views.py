@@ -1,11 +1,16 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from .models import PostModel,CommentModel
 
 # Create your views here.
 def create_post_view(request):
     if request.method == 'POST':
-        PostModel.objects.create(user=request.user, post=request.FILES['post'],caption=request.POST.get('caption'))
-        return redirect('profile_view')
+        PostModel.objects.create(
+            user=request.user,
+            post=request.FILES['post'],
+            caption=request.POST.get('caption')
+        )
+        username = request.user.username
+        return redirect('profile_view', username=username)
     return render(request, 'create_post.html')
 
 def view_post(request,id):
@@ -46,6 +51,13 @@ def update_post_view(request,id):
         return redirect('view_post',id)
     return render(request, 'update_post.html', context={"request":request,"user":request.user,"post":post_instance})
 
-def delete_post_view(request,id):
-    PostModel.objects.get(id=id).delete()
-    return redirect('profile_view')
+def delete_post_view(request, id):
+    post_instance = get_object_or_404(PostModel, id=id)
+
+    if post_instance.user == request.user:
+        post_instance.delete()
+        username = request.user.username
+        return redirect('profile_view', username=username)
+    else:
+        # Handle unauthorized deletion attempt
+        return render(request, 'error.html', {'message': 'You are not authorized to delete this post.'})
