@@ -10,7 +10,21 @@
          {% for post in posts%}
         <div class="col-md-6 offset-md-3 mb-4">
             <div class="card">
-                <h5 class="card-title" style="padding-top: 10px;padding-left: 10px;">{{post.user.username}}</h5>
+                <!-- <h5 class="card-title" style="padding-top: 10px;padding-left: 10px;">{{post.user.username}}</h5> -->
+                <div class="post-header" style="padding: 10px 10px 0px 10px;">
+                    <a href="{% url 'profile_view' post.user.username %}" class="anchor">
+                    <div class="user-info">
+                        {% if post.user.UserProfileModel_user.has_profile_pic %}
+                        <img src="{{post.user.UserProfileModel_user.profile_picture.url}}" style="border:1px solid grey;"  alt="User Profile">
+                        {%else%}
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg" style="border:1px solid grey;" alt="User Profile">
+                        {% endif %}
+                        <div>
+                            <h6 class="mt-0 mb-0">{{post.user.first_name}} {{post.user.last_name}}</h6>
+                            <small>@{{post.user.username}}</small>
+                        </div>
+                    </div></a>
+                </div> 
                 <a href="{% url 'view_post' post.id %}"><img src="{{post.post.url}}" class="card-img-top post-img fix-post-img" alt="Post Image"></a>
                 <div class="card-body">
                     <p class="card-text">{{post.caption}}</p>

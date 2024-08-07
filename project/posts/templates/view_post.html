@@ -10,13 +10,18 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="post-header" style="padding: 10px 10px 0px 10px;">
+                    <a href="{% url 'profile_view' post.user.username %}" class="anchor">
                     <div class="user-info">
-                        <img src="{{post.user.UserProfileModel_user.profile_picture.url}}"  alt="User Profile">
+                        {% if post.user.UserProfileModel_user.has_profile_pic %}
+                        <img src="{{post.user.UserProfileModel_user.profile_picture.url}}" style="border:1px solid grey;"  alt="User Profile">
+                        {%else%}
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg" style="border:1px solid grey;" alt="User Profile">
+                        {% endif %}
                         <div>
                             <h6 class="mt-0 mb-0">{{post.user.first_name}} {{post.user.last_name}}</h6>
                             <small>@{{post.user.username}}</small>
                         </div>
-                    </div>
+                    </div></a>
                 </div> 
                 <img src="{{post.post.url}}" style="padding: 0px 10px;" class="card-img-top post-img" alt="Post Image">
                 <div class="card-body">
@@ -53,7 +58,12 @@
                 <h5>Comments</h5>
                 {% for comment in post.comments.all %}
                 <div class="media mb-3">
-                    <img src="{{comment.user.UserProfileModel_user.profile_picture.url}}" class="mr-3 rounded-circle" alt="User Image" width="50">
+                    <a href="{% url 'profile_view' comment.user.username %}" class="anchor">
+                    {% if comment.user.UserProfileModel_user.has_profile_pic %}
+                    <img src="{{comment.user.UserProfileModel_user.profile_picture.url}}" style="border:1px solid grey;"  class="mr-3 rounded-circle" alt="User Image" width="50">
+                    {% else %}
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg" style="border:1px solid grey;"  class="mr-3 rounded-circle" alt="User Image" width="50">
+                    {% endif %}</a>
                     <div class="media-body">
                         <h6 class="mt-0">{{comment.user.username}}</h6>
                         {{comment.comment}}

@@ -16,6 +16,5 @@ def is_follow(obj,user):
     return user.UserRelationModel_user.following.all().filter(id=obj.id).exists()
 
 @register.filter
-def covert_time(obj):
-    return obj.created_at
-    # return timezone.localtime()
+def covert_time(timestamp):
+    return timezone.localtime(timestamp).strftime('%I:%M %p')

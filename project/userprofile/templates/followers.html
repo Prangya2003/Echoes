@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Followers{% endblock %}
+
+{% block body %}
+{% include "navbar.html" %}
+{% load custom_tags %}
+<div class="container mt-5 pt-4">
+    <h2>Followers</h2>
+    {% for follower in data.followers %}
+    <a href="{% url 'profile_view' follower.username %}" class="anchor">
+    <div class="follow-item">
+        {% if follower.UserProfileModel_user.has_profile_pic %}
+        <img src="{{follower.UserProfileModel_user.profile_picture.url}}" class="follow-profile-img"  style="border: 1px solid gray;" alt="Follower Image">
+        {% else %}
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg" style="border:1px solid grey;" " class="follow-profile-img" alt="Profile Image" style="border: 1px solid rgb(224, 211, 211);">
+        {% endif %}
+        
+        <div>
+            <h5>{{follower.first_name}} {{follower.last_name}}</h5>
+            <p>@{{follower.username}}</p>
+        </div>
+    </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

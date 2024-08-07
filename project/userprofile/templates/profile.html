@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 {% block title %}Homepage{% endblock %}
 
@@ -11,7 +12,7 @@
                 {% if user.UserProfileModel_user.has_profile_pic %}
                 <img src="{{user.UserProfileModel_user.profile_picture.url}}" class="profile-img" alt="Profile Image" style="border: 1px solid rgb(224, 211, 211);">
                 {% else %}
-                <img src="" class="profile-img" alt="Profile Image" style="border: 1px solid rgb(224, 211, 211);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg" style="border:1px solid grey;"  class="profile-img" alt="Profile Image" style="border: 1px solid rgb(224, 211, 211);">
                 {% endif %}
             </a>
             <h2 class="mt-2">{{user.username}}</h2>
@@ -22,10 +23,14 @@
                     <strong>{{data.posts_count}}</strong><br>Posts
                 </div>
                 <div class="col-4">
+                    <a href="{% url 'followers_view' user.username %}" class="anchor">
                     <strong>{{data.followers_count}}</strong><br>Followers
+                </a>
                 </div>
                 <div class="col-4">
+                    <a href="{% url 'following_view' user.username %}" class="anchor">
                     <strong>{{data.following_count}}</strong><br>Following
+                </a>
                 </div>
             </div>
             {% if data.is_user_profile %}
@@ -49,9 +54,11 @@
                 <li class="nav-item">
                     <a class="nav-link active" id="posts-tab" data-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected="true">Posts</a>
                 </li>
+                {% if data.is_user_profile %}
                 <li class="nav-item">
                     <a class="nav-link" id="saved-tab" data-toggle="tab" href="#saved" role="tab" aria-controls="saved" aria-selected="false">Saved</a>
                 </li>
+                {% endif %}
             </ul>
             <!-- Tab panes -->
             <div class="tab-content">
@@ -73,6 +80,7 @@
                         {% endif %}
                     </div>
                 </div>
+                {% if data.is_user_profile %}
                 <div class="tab-pane fade" id="saved" role="tabpanel" aria-labelledby="saved-tab">
                     <div class="row mt-4">
                         <!-- Saved Post -->
@@ -93,6 +101,7 @@
                         
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>

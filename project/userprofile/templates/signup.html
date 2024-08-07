@@ -2,12 +2,21 @@
 {% block title %}Sign-up Page{% endblock %}
 
 {% block body %}
+<div class="container text-center mt-3" style="width: 30%;">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
 <div class="container">
     <div class="signup-container text-center">
         <div class="signup-logo">
-            <img src="\media\logo.jpg" alt="Logo">
+            <img src="/media/logo.png" alt="Logo">
         </div>
-        <h2 class="signup-heading">Sign Up</h2>
+        <h2>Sign Up</h2>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">

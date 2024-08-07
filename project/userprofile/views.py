@@ -1,4 +1,5 @@
 from django.shortcuts import render,redirect
+from django.contrib import messages
 from django.contrib.auth import get_user_model,authenticate,login,logout
 from .models import UserProfileModel,UserRelationModel
 from posts.models import PostModel,SavedPostModel
@@ -10,7 +11,7 @@ def home_view(request):
         if get_user_model().objects.filter(username=request.POST.get('username')).exists():
             return redirect('profile_view', request.POST.get('username'))
     if request.user.is_authenticated:
-        post_data = PostModel.objects.exclude(user__pk=request.user.pk)
+        post_data = PostModel.objects.exclude(user__pk=request.user.pk).order_by('-created_at')
         return render(request, 'home.html',context={"request":request,"user":request.user,"posts":post_data})
     else:
         return redirect('login_view')
@@ -30,21 +31,27 @@ def login_view(request):
     return render(request, 'login.html')
 
 def signup_view(request):
+    error_flag = False
     if request.method == 'POST':
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         password = request.POST.get('password')
         email = request.POST.get('email')
-
-        user_instance = get_user_model().objects.create(username=username,first_name=first_name,last_name=last_name,email=email)
-        user_instance.set_password(password)
-        user_instance.save()
-        UserProfileModel.objects.create(user=user_instance) 
-        UserRelationModel.objects.create(user=user_instance) 
-        RecipientModel.objects.create(user=user_instance) 
-        SavedPostModel.objects.create(user=user_instance)
-        return redirect('login_view')
+        
+        if get_user_model().objects.filter(username=username).exists():
+            messages.error(request,"Username is already taken")
+            error_flag = True
+        else:
+            user_instance = get_user_model().objects.create(username=username,first_name=first_name,last_name=last_name,email=email)
+            user_instance.set_password(password)
+            user_instance.save()
+            UserProfileModel.objects.create(user=user_instance) 
+            UserRelationModel.objects.create(user=user_instance) 
+            RecipientModel.objects.create(user=user_instance) 
+            SavedPostModel.objects.create(user=user_instance)
+        if not error_flag:
+            return redirect('login_view')
     return render(request, 'signup.html')
 
 def logout_view(request):
@@ -138,3 +145,19 @@ def save_view(request,id):
         saved_post_instance.posts.add(post_instance)
     saved_post_instance.save()
     return redirect('home_view')
+
+def followers_view(request,username):
+    user_instance = get_user_model().objects.get(username=username)
+    data = {
+        "user":user_instance,
+        "followers":user_instance.UserRelationModel_user.followers.all()
+    }
+    return render(request, 'followers.html',context={"request":request,"data":data})
+
+def following_view(request,username):
+    user_instance = get_user_model().objects.get(username=username)
+    data = {
+        "user":user_instance,
+        "followings":user_instance.UserRelationModel_user.following.all()
+    }
+    return render(request, 'following.html',context={"request":request,"data":data})
